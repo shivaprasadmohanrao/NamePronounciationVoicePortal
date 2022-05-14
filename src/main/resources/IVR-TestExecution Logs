@@ -1,0 +1,7 @@
+1. Name Recording Interaction Started.
+2. User entered employee id ======> 2012682
+3. Audio Recording for caller Name.
+4. Recording URL =======> https://api.twilio.com/2010-04-01/Accounts/AC788ea0b506ec5b925ae494cbd02c2a0e/Recordings/RE7e5b09cf6527feb2e2714c0b7ee7eb2b
+5. SaveAudioFile Service Started..
+6. Name Recording is stored at: /Users/satpra/Downloads/ivr-npvp/target/classes/static/empid_2012682.wav
+7. SaveAudioFile Service Completed.
