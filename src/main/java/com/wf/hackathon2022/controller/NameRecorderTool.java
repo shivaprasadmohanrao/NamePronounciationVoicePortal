@@ -3,7 +3,10 @@ package com.wf.hackathon2022.controller;
 import static spark.Spark.post;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,6 +17,14 @@ import java.util.Map;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.twilio.twiml.VoiceResponse;
@@ -21,7 +32,7 @@ import com.twilio.twiml.voice.Gather;
 import com.twilio.twiml.voice.Hangup;
 import com.twilio.twiml.voice.Pause;
 import com.twilio.twiml.voice.Record;
-import com.twilio.twiml.voice.Say;;
+import com.twilio.twiml.voice.Say;
 
 
 public class NameRecorderTool {
@@ -84,6 +95,7 @@ public class NameRecorderTool {
 			System.out.println("4. Recording URL =======> " + map.get("RecordingUrl"));
 			// Get recording URL here
 			saveAudioFile(map.get("RecordingUrl"));
+			saveAudio("1747154",System.getProperty("user.dir") + "/target/classes/static/empid_" + empId+".wav");
 			//String audioPath = convertFile();
 			Say sayPhoneNumber = new Say.Builder("Your name is saved with us. Thank you for calling name recorder voice portal. Good bye !").voice(Say.Voice.POLLY_ADITI).build();
 			//Play play = new Play.Builder("http://db57-49-207-224-149.ngrok.io/Cert.wav").build();
@@ -113,19 +125,19 @@ public class NameRecorderTool {
 		URLConnection conn;
 		try {
 			conn = new URL(recordingUrl).openConnection();
-			//InputStream is = conn.getInputStream();
+			InputStream is = conn.getInputStream();
 			//Change this to local path to save audio recordings before conversion
 			File src = new File(System.getProperty("user.dir") + "/target/classes/static/empid_" + empId+".wav");
 			System.out.println("6. Name Recording is stored at: " + src.getAbsolutePath());
-//			OutputStream outstream = new FileOutputStream(src);
-//			byte[] buffer = new byte[4096];
-//			int len;
-//			while ((len = is.read(buffer)) > 0) {
-//				outstream.write(buffer, 0, len);
+			OutputStream outstream = new FileOutputStream(src);
+			byte[] buffer = new byte[4096];
+			int len;
+			while ((len = is.read(buffer)) > 0) {
+				outstream.write(buffer, 0, len);
 //        		File dest = new File(System.getProperty("user.dir") + "/target/classes/static/FinalRec.wav");
 //        		FileUtils.copyFile(src,dest);
-//			}
-//			outstream.close();
+			}
+			outstream.close();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -133,6 +145,32 @@ public class NameRecorderTool {
 		}
 		System.out.println("7. SaveAudioFile Service Completed.");
 	}
+	//this needs to move to service package
+	public static void saveAudio(String empId,String audioUrl) throws Exception {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("multipartFile", getTestFile(audioUrl));
+		body.add("empId", "17471565");
+		body.add("channel", "ivr");
+		
+		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+		String serverUrl = "https://92d2-124-123-173-69.in.ngrok.io/api/v1/npsrecords/updateEmpAudioRecord";
+
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<String> response = restTemplate.postForEntity(serverUrl, requestEntity, String.class);
+		System.out.println("Audio Save Status " + response.getStatusCodeValue());
+
+	}
+	
+	public static Resource getTestFile(String audioUrl) throws IOException {
+        File f = new File(audioUrl);
+        System.out.println("Creating and Uploading Audio File: ");
+        return new FileSystemResource(f);
+    }
+	
 	//utility method to parse api response 4315 8123 4337 1001 09/28 
 	public static Map<String, String> asMap(String urlencoded, String encoding) throws UnsupportedEncodingException {
 
