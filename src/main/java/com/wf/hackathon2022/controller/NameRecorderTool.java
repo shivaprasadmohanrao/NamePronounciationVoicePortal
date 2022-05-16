@@ -37,7 +37,6 @@ import com.twilio.twiml.voice.Say;
 
 public class NameRecorderTool {
 	
-	static String ngrok_url = "http://db31-2401-4900-5199-8b5f-4de-190f-1fd2-cf2d.ngrok.io";
 	static VoiceResponse twiml = null;//for generating twiml(twilio xml) for voice dialog control
 	static RestTemplate restTemplate = new RestTemplate();
 	static String languageSelected = "";//user selected Language
